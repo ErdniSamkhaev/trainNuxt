@@ -1,6 +1,12 @@
 <template>
-  <div class="min-h-screen bg-gray-100 flex flex-col items-center p-4">
+  <div class="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col items-center p-4">
     <h1 class="text-2xl font-bold mb-4">Список задач</h1>
+    <button
+    @click="toggleTheme"
+    class="bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg shadow hover:bg-gray-300 dark:hover:bg-gray-700"
+    >
+    {{ isDarkMode ? '🌙 Темная' : '☀️ Светлая' }}
+    </button>
     <!-- Создаем фильтр -->
     <div class="flex gap-4 mb-4">
       <button @click="filter = 'all'" class="hover:underline">Все</button>
@@ -17,7 +23,7 @@
         v-model="newTask"
         type="text"
         placeholder="Введите новую задачу"
-        class="border p-2 rounded-lg"
+        class="border p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
       />
       <button
         @click="addTask"
@@ -31,7 +37,7 @@
       <li
         v-for="(task, index) in filteredTasks"
         :key="task.text"
-        class="bg-white p-2 rounded-lg shadow-md mb-2 flex justify-between items-center"
+        class="bg-white dark:bg-gray-800 p-2 rounded-lg shadow-md mb-2 flex justify-between items-center"
       >
         <div class="flex items-center gap-2">
           <input
@@ -39,7 +45,9 @@
             v-model="task.completed"
             class="cursor-pointer"
           />
-          <span :class="{ 'line-through text-gray-500': task.completed }">
+          <span :class="{ 'line-through text-gray-500 dark:text-gray-400': task.completed,
+            'text-gray-800 dark:text-gray-200': !task.completed
+          }">
             {{ task.text }}
           </span>
         </div>
@@ -67,16 +75,29 @@ const tasks = ref([]);
 const filter = ref("all");
 const isModalVisible = ref(false);
 const taskToDelete = ref(null);
+const isDarkMode = ref(false);
 
 // Функкция для сохранения задач в localStorage
 const saveTasks = () => {
     localStorage.setItem('tasks', JSON.stringify(tasks.value))
 }
-// Загрузка задач из localStorage при заугрузке страницы
+// Сохранение темы в localStorage
+const toggleTheme = () => {
+    isDarkMode.value = !isDarkMode.value;
+    const theme = isDarkMode.value ? 'dark' : 'light';
+    document.documentElement.classList.toggle('dark', isDarkMode.value);
+    localStorage.setItem('theme', theme);
+}
+// Загрузка задач и темы из localStorage при загрузке страницы
 onMounted(() => {
     const savedTasks = localStorage.getItem('tasks')
     if (savedTasks) {
         tasks.value = JSON.parse(savedTasks)
+    }
+    const savedTheme = localStorage.getItem('theme')
+    if (savedTheme === 'dark') {
+        isDarkMode.value = true;
+        document.documentElement.classList.add('dark');
     }
 })
 // Сохраняем статусы задач
