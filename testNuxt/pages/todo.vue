@@ -52,12 +52,26 @@
 </template>
 
 <script setup>
-// Импортируем ref для работы с переменными
-import { ref, computed } from "vue";
+// Импортируем зависимости
+import { onMounted, ref, computed, watch } from "vue";
 // Создаем переменные
 const newTask = ref("");
 const tasks = ref([]);
 const filter = ref("all");
+
+// Функкция для сохранения задач в localStorage
+const saveTasks = () => {
+    localStorage.setItem('tasks', JSON.stringify(tasks.value))
+}
+// Загрузка задач из localStorage при заугрузке страницы
+onMounted(() => {
+    const savedTasks = localStorage.getItem('tasks')
+    if (savedTasks) {
+        tasks.value = JSON.parse(savedTasks)
+    }
+})
+// Сохраняем статусы задач
+watch(tasks, saveTasks, { deep: true });
 // Функиця addTask для добавления задач
 const addTask = () => {
   if (newTask.value.trim()) {
@@ -66,11 +80,13 @@ const addTask = () => {
       completed: false,
     });
     newTask.value = "";
+    saveTasks();
   }
 };
 // Функция removeTask для удаления задач
 const removeTask = (index) => {
   tasks.value.splice(index, 1);
+  saveTasks();
 };
 // Функция для фильтрации задач
 const filteredTasks = computed(() => {
