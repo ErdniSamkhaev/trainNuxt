@@ -36,7 +36,7 @@
       />
       <button
         @click="addTask"
-        class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+        class="bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:shadow-lg hover:scale-105 transition-transform"
       >
         Добавить
       </button>
@@ -44,9 +44,9 @@
     <!-- Список задач -->
     <transition-group name="fade" tag="ul" class="w-full max-w-md">
       <li
-        v-for="(task) in filteredTasks"
+        v-for="task in filteredTasks"
         :key="task.id"
-        class="bg-white dark:bg-gray-800 p-2 rounded-lg shadow-md mb-2 flex justify-between items-center"
+        class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2 rounded-lg shadow-sm dark:shadow-sm hover:shadow-md hover:dark:shadow-[0_4px_6px_rgba(255,255,255,0.2)] mb-2 transition-shadow flex justify-between items-center"
       >
         <div class="flex items-center gap-2">
           <input
@@ -58,7 +58,9 @@
           <span
             :class="{
               'line-through text-gray-500 dark:text-gray-400': task.completed,
-              'text-gray-800 dark:text-gray-200': !task.completed,
+              'text-gray-800': !task.completed,
+              'dark:text-gray-400': task.completed && isDarkMode,
+              'dark:text-gray-200': !task.completed && isDarkMode,
             }"
           >
             {{ task.text }}
@@ -67,7 +69,6 @@
         <div class="text-sm text-gray-500 dark:text-gray-400">
           {{ new Date(task.createdAt).toLocaleString() }}
         </div>
-
         <button
           @click="confirmDelete(task)"
           class="text-red-500 hover:underline"
@@ -122,12 +123,12 @@ const updateTask = async (task) => {
 
     if (error) {
       console.error("Ошибка обновления задачи:", error);
-      alert("Ошибка: не удалось обновить задачу.");
+      notification.value.show("Ошибка: не удалось обновить задачу.", "error");
       return;
     }
   } catch (error) {
     console.error("Ошибка обновления задачи:", error);
-    alert("Что-то пошло не так.");
+    notification.value.show("Ошибка: Что-то пошло не так.", "error");
   }
 };
 
@@ -172,31 +173,33 @@ const addTask = async () => {
         id: data[0].id,
       });
       newTask.value = "";
-      notification.value.show('Задача успешно добавлена!');
+      notification.value.show("Задача успешно добавлена!", "success");
     } catch (error) {
-      console.error("Ошибка добавления задачи:", error);
-      alert("Ошибка: задача не добавлена.");
-      notification.value.show('Ошибка: задача не добавлена.');
+      notification.value.show("Ошибка: задача не добавлена.", "error");
     }
   }
 };
 // Функция для фильтрации задач
 const filteredTasks = computed(() => {
-  let sortedTasks = [...tasks.value];
-  //Фильтрация по выполненным задачам
+  let filteredTasks = tasks.value;
+
+  // Фильтрация по выполненным/невыполненным задачам
   if (filter.value === "completed") {
-    sortedTasks = sortedTasks.filter((task) => task.completed);
+    filteredTasks = filteredTasks.filter((task) => task.completed);
+  } else if (filter.value === "active") {
+    filteredTasks = filteredTasks.filter((task) => !task.completed);
   }
-  //Фильтрация по невыполненным задачам
-  if (filter.value === "active") {
-    sortedTasks = sortedTasks.filter((task) => !task.completed);
-  }
-  //Сортировка по дате
-  if (sortOrder.value === "newest") {
-    sortedTasks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  } else if (sortOrder.value === "oldest") {
-    sortedTasks.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-  }
+
+  // Копия массива для сортировки
+  const sortedTasks = [...filteredTasks];
+
+  // Сортировка по дате
+  sortedTasks.sort((a, b) =>
+    sortOrder.value === "newest"
+      ? new Date(b.createdAt) - new Date(a.createdAt)
+      : new Date(a.createdAt) - new Date(b.createdAt)
+  );
+
   return sortedTasks;
 });
 // Метод для подтверждения удаления
@@ -208,14 +211,19 @@ const confirmDelete = (task) => {
 const handleConfirmDelete = async () => {
   if (taskToDelete.value) {
     try {
-      const { error } = await supabase.from("tasks").delete().eq("id", taskToDelete.value.id);
+      const { error } = await supabase
+        .from("tasks")
+        .delete()
+        .eq("id", taskToDelete.value.id);
       if (error) throw error;
 
-      tasks.value = tasks.value.filter((task) => task.id !== taskToDelete.value.id);
-      notification.value.show('Задача успешно удалена!');
+      tasks.value = tasks.value.filter(
+        (task) => task.id !== taskToDelete.value.id
+      );
+      notification.value.show("Задача успешно удалена!", "error");
     } catch (error) {
       console.error("Ошибка удаления задачи:", error);
-      notification.value.show('Ошибка: задача не удалена.');
+      notification.value.show("Ошибка: задача не удалена.", "error");
     }
   }
   isModalVisible.value = false;
@@ -231,11 +239,12 @@ const handleCancelDelete = () => {
 <style scoped>
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.5s, transform 0.5s;
+  @apply transition-all duration-500 ease-in-out;
 }
-.fade-enter-from,
+.fade-enter-from {
+  @apply opacity-0 scale-90;
+}
 .fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
+  @apply opacity-0 scale-90;
 }
 </style>
