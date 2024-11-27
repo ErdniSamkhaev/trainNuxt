@@ -44,14 +44,15 @@
     <!-- Список задач -->
     <transition-group name="fade" tag="ul" class="w-full max-w-md">
       <li
-        v-for="(task, index) in filteredTasks"
-        :key="task.text"
+        v-for="(task) in filteredTasks"
+        :key="task.id"
         class="bg-white dark:bg-gray-800 p-2 rounded-lg shadow-md mb-2 flex justify-between items-center"
       >
         <div class="flex items-center gap-2">
           <input
             type="checkbox"
             v-model="task.completed"
+            @change="updateTask(task)"
             class="cursor-pointer"
           />
           <span
@@ -68,7 +69,7 @@
         </div>
 
         <button
-          @click="confirmDelete(index)"
+          @click="confirmDelete(task)"
           class="text-red-500 hover:underline"
         >
           Удалить
@@ -86,7 +87,8 @@
 
 <script setup>
 // Импортируем зависимости
-import { onMounted, ref, computed, watch } from "vue";
+import { onMounted, ref, computed } from "vue";
+import { createClient } from "@supabase/supabase-js";
 import Modal from "~/components/Modal.vue";
 // Создаем переменные
 const newTask = ref("");
@@ -96,11 +98,10 @@ const isModalVisible = ref(false);
 const taskToDelete = ref(null);
 const isDarkMode = ref(false);
 const sortOrder = ref("newest");
-
-// Функкция для сохранения задач в localStorage
-const saveTasks = () => {
-  localStorage.setItem("tasks", JSON.stringify(tasks.value));
-};
+const config = useRuntimeConfig();
+const supabaseUrl = config.public.VITE_SUPABASE_URL;
+const supabaseKey = config.public.VITE_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 // Сохранение темы в localStorage
 const toggleTheme = () => {
   isDarkMode.value = !isDarkMode.value;
@@ -108,30 +109,70 @@ const toggleTheme = () => {
   document.documentElement.classList.toggle("dark", isDarkMode.value);
   localStorage.setItem("theme", theme);
 };
-// Загрузка задач и темы из localStorage при загрузке страницы
-onMounted(() => {
-  const savedTasks = localStorage.getItem("tasks");
-  if (savedTasks) {
-    tasks.value = JSON.parse(savedTasks);
+// Функция для обновления задачи
+const updateTask = async (task) => {
+  try {
+    const { error } = await supabase
+      .from("tasks")
+      .update({ completed: task.completed })
+      .eq("id", task.id);
+
+    if (error) {
+      console.error("Ошибка обновления задачи:", error);
+      alert("Ошибка: не удалось обновить задачу.");
+      return;
+    }
+  } catch (error) {
+    console.error("Ошибка обновления задачи:", error);
+    alert("Что-то пошло не так.");
   }
+};
+
+// Загрузка темы из localStorage при загрузке страницы
+onMounted(async () => {
   const savedTheme = localStorage.getItem("theme");
   if (savedTheme === "dark") {
     isDarkMode.value = true;
     document.documentElement.classList.add("dark");
   }
+  try {
+    const { data, error } = await supabase
+      .from("tasks")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    tasks.value = data.map((task) => ({
+      text: task.title,
+      completed: task.completed,
+      createdAt: task.created_at,
+      id: task.id,
+    }));
+  } catch (error) {
+    console.error("Ошибка загрузки задач:", error);
+  }
 });
-// Сохраняем статусы задач
-watch(tasks, saveTasks, { deep: true });
 // Функиця addTask для добавления задач
-const addTask = () => {
+const addTask = async () => {
   if (newTask.value.trim()) {
-    tasks.value.push({
-      text: newTask.value.trim(),
-      completed: false,
-      createdAt: new Date().toISOString(),
-    });
-    newTask.value = "";
-    saveTasks();
+    try {
+      const { data, error } = await supabase
+        .from("tasks")
+        .insert([{ title: newTask.value.trim(), completed: false }])
+        .select();
+
+      if (error) throw error;
+
+      tasks.value.push({
+        text: data[0].title,
+        completed: data[0].completed,
+        createdAt: data[0].created_at,
+        id: data[0].id,
+      });
+      newTask.value = "";
+    } catch (error) {
+      console.error("Ошибка добавления задачи:", error);
+      alert("Ошибка: задача не добавлена.");
+    }
   }
 };
 // Функция для фильтрации задач
@@ -154,15 +195,21 @@ const filteredTasks = computed(() => {
   return sortedTasks;
 });
 // Метод для подтверждения удаления
-const confirmDelete = (index) => {
-  taskToDelete.value = index;
+const confirmDelete = (task) => {
+  taskToDelete.value = task;
   isModalVisible.value = true;
 };
 // Метод для подтверждения удаления
-const handleConfirmDelete = () => {
-  if (taskToDelete.value !== null) {
-    tasks.value.splice(taskToDelete.value, 1);
-    saveTasks();
+const handleConfirmDelete = async () => {
+  if (taskToDelete.value) {
+    try {
+      const { error } = await supabase.from("tasks").delete().eq("id", taskToDelete.value.id);
+      if (error) throw error;
+
+      tasks.value = tasks.value.filter((task) => task.id !== taskToDelete.value.id);
+    } catch (error) {
+      console.error("Ошибка удаления задачи:", error);
+    }
   }
   isModalVisible.value = false;
   taskToDelete.value = null;
