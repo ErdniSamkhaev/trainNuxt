@@ -82,6 +82,7 @@
       @confirm="handleConfirmDelete"
       @cancel="handleCancelDelete"
     />
+    <Notification ref="notification" />
   </div>
 </template>
 
@@ -90,8 +91,10 @@
 import { onMounted, ref, computed } from "vue";
 import { createClient } from "@supabase/supabase-js";
 import Modal from "~/components/Modal.vue";
+import Notification from "~/components/Notification.vue";
 // Создаем переменные
 const newTask = ref("");
+const notification = ref(null);
 const tasks = ref([]);
 const filter = ref("all");
 const isModalVisible = ref(false);
@@ -169,9 +172,11 @@ const addTask = async () => {
         id: data[0].id,
       });
       newTask.value = "";
+      notification.value.show('Задача успешно добавлена!');
     } catch (error) {
       console.error("Ошибка добавления задачи:", error);
       alert("Ошибка: задача не добавлена.");
+      notification.value.show('Ошибка: задача не добавлена.');
     }
   }
 };
@@ -207,8 +212,10 @@ const handleConfirmDelete = async () => {
       if (error) throw error;
 
       tasks.value = tasks.value.filter((task) => task.id !== taskToDelete.value.id);
+      notification.value.show('Задача успешно удалена!');
     } catch (error) {
       console.error("Ошибка удаления задачи:", error);
+      notification.value.show('Ошибка: задача не удалена.');
     }
   }
   isModalVisible.value = false;
