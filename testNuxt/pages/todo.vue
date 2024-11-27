@@ -43,21 +43,30 @@
             {{ task.text }}
           </span>
         </div>
-        <button @click="removeTask(index)" class="text-red-500 hover:underline">
+        <button @click="confirmDelete(index)" class="text-red-500 hover:underline">
           Удалить
         </button>
       </li>
     </transition-group>
+    <Modal
+    :show="isModalVisible"
+    message="Вы уверены, что хотите удалить эту задачу?"
+    @confirm="handleConfirmDelete"
+    @cancel="handleCancelDelete"
+    />
   </div>
 </template>
 
 <script setup>
 // Импортируем зависимости
 import { onMounted, ref, computed, watch } from "vue";
+import Modal from "~/components/Modal.vue";
 // Создаем переменные
 const newTask = ref("");
 const tasks = ref([]);
 const filter = ref("all");
+const isModalVisible = ref(false);
+const taskToDelete = ref(null);
 
 // Функкция для сохранения задач в localStorage
 const saveTasks = () => {
@@ -83,11 +92,6 @@ const addTask = () => {
     saveTasks();
   }
 };
-// Функция removeTask для удаления задач
-const removeTask = (index) => {
-  tasks.value.splice(index, 1);
-  saveTasks();
-};
 // Функция для фильтрации задач
 const filteredTasks = computed(() => {
   if (filter.value === "completed") {
@@ -98,6 +102,25 @@ const filteredTasks = computed(() => {
   }
   return tasks.value;
 });
+// Метод для подтверждения удаления
+const confirmDelete = (index) => {
+    taskToDelete.value = index;
+    isModalVisible.value = true;
+};
+// Метод для подтверждения удаления
+const handleConfirmDelete = () => {
+    if (taskToDelete.value !== null) {
+        tasks.value.splice(taskToDelete.value, 1);
+        saveTasks();
+    }
+    isModalVisible.value = false;
+    taskToDelete.value = null;
+};
+// Метод для отмены удаления
+const handleCancelDelete = () => {
+    isModalVisible.value = false;
+    taskToDelete.value = null;
+};
 </script>
 
 <style scoped>
