@@ -5,10 +5,16 @@
       <h1 class="text-2xl font-bold mb-4">Добро пожаловать в ToDo App</h1>
       <template v-if="user">
         <p>Вы вошли как: {{ user.email }}</p>
-        <nuxt-link to="/todo" class="mt-4 text-blue-500 hover:underline">
+        <button
+          @click="goToTasks"
+          class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
           Перейти к списку задач
-        </nuxt-link>
-        <button @click="logout" class="mt-2 text-red-500 hover:underline">
+        </button>
+        <button
+          @click="logout"
+          class="mt-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+        >
           Выйти
         </button>
       </template>
@@ -25,10 +31,12 @@
   
   <script setup>
   import { ref } from "vue";
- 
+  import { useRouter } from "vue-router";
+  
   const user = ref(null);
   const { $supabase } = useNuxtApp();
-
+  const router = useRouter();
+  
   const fetchUser = async () => {
     const { data } = await $supabase.auth.getUser();
     user.value = data.user;
@@ -38,6 +46,10 @@
     await $supabase.auth.signOut();
     user.value = null;
     alert("Вы вышли из системы!");
+  };
+  
+  const goToTasks = () => {
+    router.push("/todo");
   };
   
   fetchUser();

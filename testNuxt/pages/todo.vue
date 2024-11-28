@@ -7,27 +7,47 @@
     <!-- Кнопка для переключения темы -->
     <button
       @click="toggleTheme"
-      class="bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg shadow hover:bg-gray-300 dark:hover:bg-gray-700"
+      class="mb-4 bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg shadow hover:bg-gray-300 dark:hover:bg-gray-700 transition-transform hover:scale-105"
     >
       {{ isDarkMode ? "🌙 Темная" : "☀️ Светлая" }}
     </button>
-    <!-- Создаем фильтр -->
+    <!-- Создаем фильтр для задач -->
     <div class="flex flex-wrap gap-2 sm:gap-4 mb-4 justify-center">
-      <button @click="filter = 'all'" class="hover:underline">Все</button>
-      <button @click="filter = 'completed'" class="hover:underline">
+      <button
+        @click="filter = 'all'"
+        :class="[
+          'px-4 py-2 rounded-lg shadow transition-transform hover:scale-105',
+          filter === 'all'
+            ? 'bg-blue-500 text-white'
+            : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
+        ]"
+      >
+        Все
+      </button>
+      <button
+        @click="filter = 'completed'"
+        :class="[
+          'px-4 py-2 rounded-lg shadow transition-transform hover:scale-105',
+          filter === 'completed'
+            ? 'bg-blue-500 text-white'
+            : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
+        ]"
+      >
         Выполненные
       </button>
-      <button @click="filter = 'active'" class="hover:underline">
+      <button
+        @click="filter = 'active'"
+        :class="[
+          'px-4 py-2 rounded-lg shadow transition-transform hover:scale-105',
+          filter === 'active'
+            ? 'bg-blue-500 text-white'
+            : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
+        ]"
+      >
         Невыполненные
       </button>
-      <select
-        v-model="sortOrder"
-        class="border p-2 rounded-lg dark:bg-gray-800 dark:text-gray-200"
-      >
-        <option value="newest">Сначала новые</option>
-        <option value="oldest">Сначала старые</option>
-      </select>
     </div>
+
     <!-- Добавляем новую задачу -->
     <div class="flex flex-wrap gap-2 sm:gap-4 mb-4 justify-center">
       <input
@@ -86,7 +106,8 @@
           <!-- Текст задачи -->
           <span
             :class="{
-              'line-through text-gray-500 dark:text-gray-400 break-words': task.completed,
+              'line-through text-gray-500 dark:text-gray-400 break-words':
+                task.completed,
               'text-gray-800 dark:text-gray-200 break-words': !task.completed,
             }"
           >
