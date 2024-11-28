@@ -11,7 +11,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       auth: {
         persistSession: true, // Сохраняем сессию
         autoRefreshToken: true, // Обновляем токены автоматически
-        redirectTo: process.client ? window.location.origin : undefined,
+        redirectTo: 'https://train-nuxt.vercel.app/',
       },
     }
   );  
