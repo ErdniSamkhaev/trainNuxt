@@ -4,6 +4,7 @@
   >
     <p v-if="userEmail">Вы вошли как: {{ userEmail }}</p>
     <h1 class="text-2xl font-bold mb-4">Список задач</h1>
+    <!-- Кнопка для переключения темы -->
     <button
       @click="toggleTheme"
       class="bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg shadow hover:bg-gray-300 dark:hover:bg-gray-700"
@@ -50,26 +51,53 @@
         class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2 rounded-lg shadow-sm dark:shadow-sm hover:shadow-md hover:dark:shadow-[0_4px_6px_rgba(255,255,255,0.2)] mb-2 transition-shadow flex justify-between items-center"
       >
         <div class="flex items-center gap-2">
-          <input
-            type="checkbox"
-            v-model="task.completed"
-            @change="updateTask(task)"
-            class="cursor-pointer"
-          />
+          <!-- Кастомный чекбокс -->
+          <div class="relative">
+            <input
+              type="checkbox"
+              :checked="task.completed"
+              @change="toggleTaskCompletion(task)"
+              class="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+            />
+            <div
+              class="w-6 h-6 border-2 border-gray-400 rounded-md flex items-center justify-center transition-all duration-300"
+              :class="{
+                'bg-green-500 border-green-500': task.completed,
+                'bg-white dark:bg-gray-800': !task.completed,
+              }"
+            >
+              <svg
+                v-if="task.completed"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="white"
+                class="w-4 h-4"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+          </div>
+          <!-- Текст задачи -->
           <span
             :class="{
               'line-through text-gray-500 dark:text-gray-400': task.completed,
-              'text-gray-800': !task.completed,
-              'dark:text-gray-400': task.completed && isDarkMode,
-              'dark:text-gray-200': !task.completed && isDarkMode,
+              'text-gray-800 dark:text-gray-200': !task.completed,
             }"
           >
             {{ task.text }}
           </span>
+          <!-- Дата задачи -->
+          <div class="text-sm text-gray-500 dark:text-gray-400">
+            {{ formatDate(task.createdAt) }}
+          </div>
         </div>
-        <div class="text-sm text-gray-500 dark:text-gray-400">
-          {{ new Date(task.createdAt).toLocaleString() }}
-        </div>
+        <!-- Кнопка удаления задачи -->
         <button
           @click="confirmDelete(task)"
           class="text-red-500 hover:underline"
@@ -78,12 +106,14 @@
         </button>
       </li>
     </transition-group>
+    <!-- Модальное окно для подтверждения удаления -->
     <Modal
       :show="isModalVisible"
       message="Вы уверены, что хотите удалить эту задачу?"
       @confirm="handleConfirmDelete"
       @cancel="handleCancelDelete"
     />
+    <!-- Кнопка назад -->
     <button
       @click="goBack"
       class="bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 mb-4"
@@ -122,10 +152,11 @@ const toggleTheme = () => {
   document.documentElement.classList.toggle("dark", isDarkMode.value);
   localStorage.setItem("theme", theme);
 };
-// Функция для обновления задачи
-const updateTask = async (task) => {
+// Функция для переключения состояния задачи
+const toggleTaskCompletion = async (task) => {
+  task.completed = !task.completed; // Локально меняем состояние
   try {
-    const { error } = await supabase
+    const { error } = await $supabase
       .from("tasks")
       .update({ completed: task.completed })
       .eq("id", task.id);
@@ -133,15 +164,15 @@ const updateTask = async (task) => {
     if (error) {
       console.error("Ошибка обновления задачи:", error);
       notification.value.show("Ошибка: не удалось обновить задачу.", "error");
-      return;
+      task.completed = !task.completed; // Если ошибка, возвращаем предыдущее состояние
     }
   } catch (error) {
     console.error("Ошибка обновления задачи:", error);
     notification.value.show("Ошибка: Что-то пошло не так.", "error");
+    task.completed = !task.completed; // Возвращаем состояние при ошибке
   }
 };
-
-// Загрузка
+// Загрузка темы, загрузка задач
 onMounted(async () => {
   // Тема из localStorage
   const savedTheme = localStorage.getItem("theme");
@@ -163,6 +194,7 @@ onMounted(async () => {
     const { data, error } = await $supabase
       .from("tasks")
       .select("*")
+      .eq("user_id", session.session.user.id)
       .order("created_at", { ascending: false });
 
     if (error) throw error;
@@ -181,11 +213,19 @@ onMounted(async () => {
 const addTask = async () => {
   if (newTask.value.trim()) {
     try {
+      // Получаем текущего пользователя
       const { data: user } = await $supabase.auth.getUser();
+      if (!user?.user?.id) {
+        throw new Error("Пользователь не авторизован.");
+      }
       const { data, error } = await $supabase
         .from("tasks")
         .insert([
-          { title: newTask.value.trim(), completed: false, user_id: user.id },
+          {
+            title: newTask.value.trim(),
+            completed: false,
+            user_id: user.user.id,
+          },
         ])
         .select();
 
@@ -207,7 +247,6 @@ const addTask = async () => {
 // Функция для фильтрации задач
 const filteredTasks = computed(() => {
   let filteredTasks = tasks.value;
-
   // Фильтрация по выполненным/невыполненным задачам
   if (filter.value === "completed") {
     filteredTasks = filteredTasks.filter((task) => task.completed);
@@ -262,6 +301,21 @@ const handleCancelDelete = () => {
 // Функция "Назад"
 const goBack = () => {
   router.go(-1);
+};
+// Дата создания задачи
+const formatDate = (date) => {
+  const utcDate = new Date(date); // Преобразуем в объект Date
+  const moscowOffset = 3 * 60 * 60 * 1000; // Московский UTC+3 в миллисекундах
+  const moscowDate = new Date(utcDate.getTime() + moscowOffset); // Добавляем разницу
+  return moscowDate.toLocaleString("ru-RU", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
 };
 </script>
 
