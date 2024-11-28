@@ -2,16 +2,6 @@
   <div
     class="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col justify-between items-center"
   >
-    <!-- Переключение темы -->
-    <div class="absolute top-4 right-4">
-      <button
-        @click="toggleTheme"
-        class="bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg shadow hover:bg-gray-300 dark:hover:bg-gray-700 transition-transform hover:scale-105"
-      >
-        {{ isDarkMode ? "🌙 Темная" : "☀️ Светлая" }}
-      </button>
-    </div>
-
     <!-- Основная секция -->
     <div class="flex flex-col items-center text-center p-6 gap-6">
       <h1 class="text-4xl font-bold">Добро пожаловать в ToDo App</h1>
@@ -65,9 +55,19 @@
     </div>
 
     <!-- Footer -->
-    <footer class="w-full bg-gray-900 text-gray-200 text-center py-4">
+    <footer class="w-full bg-gray-900 text-gray-200 text-center py-4 relative">
       <p>&copy; 2024 ToDo App. Все права защищены.</p>
     </footer>
+
+    <!-- Кнопка переключения темы -->
+    <div class="fixed bottom-16 right-4 sm:bottom-4">
+      <button
+        @click="toggleTheme"
+        class="bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg shadow hover:bg-gray-300 dark:hover:bg-gray-700 transition-transform hover:scale-105"
+      >
+        {{ isDarkMode ? "🌙 Темная" : "☀️ Светлая" }}
+      </button>
+    </div>
   </div>
 </template>
 
