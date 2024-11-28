@@ -10,6 +10,10 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/cli": "^6.2.0",
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/ios": "^6.2.0",
     "@supabase/supabase-js": "^2.46.1",
     "@vite-pwa/nuxt": "^0.10.6",
     "nuxt": "^3.14.1592",
