@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col items-center p-4"
+    class="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col items-center p-4 sm:px-10"
   >
     <p v-if="userEmail">Вы вошли как: {{ userEmail }}</p>
     <h1 class="text-2xl font-bold mb-4">Список задач</h1>
@@ -12,7 +12,7 @@
       {{ isDarkMode ? "🌙 Темная" : "☀️ Светлая" }}
     </button>
     <!-- Создаем фильтр -->
-    <div class="flex gap-4 mb-4">
+    <div class="flex flex-wrap gap-2 sm:gap-4 mb-4 justify-center">
       <button @click="filter = 'all'" class="hover:underline">Все</button>
       <button @click="filter = 'completed'" class="hover:underline">
         Выполненные
@@ -29,16 +29,16 @@
       </select>
     </div>
     <!-- Добавляем новую задачу -->
-    <div class="flex gap-2 mb-4">
+    <div class="flex flex-wrap gap-2 sm:gap-4 mb-4 justify-center">
       <input
         v-model="newTask"
         type="text"
         placeholder="Введите новую задачу"
-        class="border p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+        class="border p-2 rounded-lg w-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
       />
       <button
         @click="addTask"
-        class="bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:shadow-lg hover:scale-105 transition-transform"
+        class="bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg shadow-md w-full sm:w-auto hover:shadow-lg hover:scale-105 transition-transform"
       >
         Добавить
       </button>
@@ -48,9 +48,9 @@
       <li
         v-for="task in filteredTasks"
         :key="task.id"
-        class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2 rounded-lg shadow-sm dark:shadow-sm hover:shadow-md hover:dark:shadow-[0_4px_6px_rgba(255,255,255,0.2)] mb-2 transition-shadow flex justify-between items-center"
+        class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2 rounded-lg shadow-sm dark:shadow-sm flex-col sm:flex-row hover:shadow-md hover:dark:shadow-[0_4px_6px_rgba(255,255,255,0.2)] mb-2 sm:items-center gap-2 sm:gap-4 transition-shadow flex justify-between items-center"
       >
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap gap-2 mb-4 w-full sm:max-w-md">
           <!-- Кастомный чекбокс -->
           <div class="relative">
             <input
@@ -86,14 +86,14 @@
           <!-- Текст задачи -->
           <span
             :class="{
-              'line-through text-gray-500 dark:text-gray-400': task.completed,
-              'text-gray-800 dark:text-gray-200': !task.completed,
+              'line-through text-gray-500 dark:text-gray-400 break-words': task.completed,
+              'text-gray-800 dark:text-gray-200 break-words': !task.completed,
             }"
           >
             {{ task.text }}
           </span>
           <!-- Дата задачи -->
-          <div class="text-sm text-gray-500 dark:text-gray-400">
+          <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
             {{ formatDate(task.createdAt) }}
           </div>
         </div>
@@ -112,6 +112,7 @@
       message="Вы уверены, что хотите удалить эту задачу?"
       @confirm="handleConfirmDelete"
       @cancel="handleCancelDelete"
+      class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center px-4"
     />
     <!-- Кнопка назад -->
     <button
