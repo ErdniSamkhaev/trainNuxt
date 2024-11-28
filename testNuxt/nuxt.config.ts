@@ -1,4 +1,3 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   modules: ["@vite-pwa/nuxt"],
   pwa: {
@@ -45,6 +44,34 @@ export default defineNuxtConfig({
         },
       ],
     },
+    workbox: {
+      globPatterns: ["**/*.{js,css,html,png,svg,ico}"], // Автокэширование файлов
+      runtimeCaching: [
+        {
+          urlPattern: /^https:\/\/train-nuxt\.vercel\.app\//, // URL приложения
+          handler: "NetworkFirst", // Приоритет сети
+          options: {
+            cacheName: "app-cache",
+            expiration: {
+              maxEntries: 50, // Ограничение по количеству файлов
+              maxAgeSeconds: 24 * 60 * 60, // 1 день
+            },
+          },
+        },
+        {
+          urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\//, // Google Fonts
+          handler: "CacheFirst",
+          options: {
+            cacheName: "google-fonts",
+            expiration: {
+              maxEntries: 20,
+              maxAgeSeconds: 365 * 24 * 60 * 60, // 1 год
+            },
+          },
+        },
+      ],
+    },
+    registerType: "autoUpdate", // Автоматическое обновление Service Worker
   },
   ssr: false,
   app: {
