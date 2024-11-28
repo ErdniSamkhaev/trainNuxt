@@ -28,7 +28,7 @@ export default defineNuxtConfig({
     baseURL: "/",
   },
   plugins: [
-    '~/plugins/supabase.js'
+    '~/plugins/supabase.client.js'
   ],
   runtimeConfig: {
     public: {
