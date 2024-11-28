@@ -2,6 +2,7 @@
   <div
     class="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col items-center p-4"
   >
+    <p v-if="userEmail">Вы вошли как: {{ userEmail }}</p>
     <h1 class="text-2xl font-bold mb-4">Список задач</h1>
     <button
       @click="toggleTheme"
@@ -83,6 +84,12 @@
       @confirm="handleConfirmDelete"
       @cancel="handleCancelDelete"
     />
+    <button
+      @click="goBack"
+      class="bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 mb-4"
+    >
+      Назад
+    </button>
     <Notification ref="notification" />
   </div>
 </template>
@@ -90,7 +97,6 @@
 <script setup>
 // Импортируем зависимости
 import { onMounted, ref, computed } from "vue";
-import { createClient } from "@supabase/supabase-js";
 import Modal from "~/components/Modal.vue";
 import Notification from "~/components/Notification.vue";
 // Создаем переменные
@@ -102,10 +108,13 @@ const isModalVisible = ref(false);
 const taskToDelete = ref(null);
 const isDarkMode = ref(false);
 const sortOrder = ref("newest");
-const config = useRuntimeConfig();
-const supabaseUrl = config.public.VITE_SUPABASE_URL;
-const supabaseKey = config.public.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const { $supabase } = useNuxtApp();
+const userEmail = ref("");
+const router = useRouter();
+// Защита роутов
+definePageMeta({
+  middleware: "auth",
+});
 // Сохранение темы в localStorage
 const toggleTheme = () => {
   isDarkMode.value = !isDarkMode.value;
@@ -132,19 +141,32 @@ const updateTask = async (task) => {
   }
 };
 
-// Загрузка темы из localStorage при загрузке страницы
+// Загрузка
 onMounted(async () => {
+  // Тема из localStorage
   const savedTheme = localStorage.getItem("theme");
   if (savedTheme === "dark") {
     isDarkMode.value = true;
     document.documentElement.classList.add("dark");
+  } else {
+    isDarkMode.value = false;
+    document.documentElement.classList.remove("dark");
   }
+
   try {
-    const { data, error } = await supabase
+    const { data: session } = await $supabase.auth.getSession();
+    if (!session?.session) {
+      return navigateTo("/login");
+    }
+    userEmail.value = session.session.user.email;
+
+    const { data, error } = await $supabase
       .from("tasks")
       .select("*")
       .order("created_at", { ascending: false });
+
     if (error) throw error;
+
     tasks.value = data.map((task) => ({
       text: task.title,
       completed: task.completed,
@@ -159,9 +181,12 @@ onMounted(async () => {
 const addTask = async () => {
   if (newTask.value.trim()) {
     try {
-      const { data, error } = await supabase
+      const { data: user } = await $supabase.auth.getUser();
+      const { data, error } = await $supabase
         .from("tasks")
-        .insert([{ title: newTask.value.trim(), completed: false }])
+        .insert([
+          { title: newTask.value.trim(), completed: false, user_id: user.id },
+        ])
         .select();
 
       if (error) throw error;
@@ -211,7 +236,7 @@ const confirmDelete = (task) => {
 const handleConfirmDelete = async () => {
   if (taskToDelete.value) {
     try {
-      const { error } = await supabase
+      const { error } = await $supabase
         .from("tasks")
         .delete()
         .eq("id", taskToDelete.value.id);
@@ -233,6 +258,10 @@ const handleConfirmDelete = async () => {
 const handleCancelDelete = () => {
   isModalVisible.value = false;
   taskToDelete.value = null;
+};
+// Функция "Назад"
+const goBack = () => {
+  router.go(-1);
 };
 </script>
 
