@@ -74,19 +74,45 @@
       </button>
     </div>
     <!-- Список задач -->
-     <transition-group name="fade" tag="ul" class="w-full max-w-md">
+    <transition-group name="fade" tag="ul" class="w-full max-w-md">
       <li
         v-for="task in filteredTasks"
         :key="task.id"
         class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2 rounded-lg shadow-sm flex-col sm:flex-row hover:shadow-md mb-2 gap-2 sm:gap-4 flex justify-between items-center"
       >
         <div class="flex flex-wrap gap-2 items-center w-full">
-          <input
-            type="checkbox"
-            :checked="task.completed"
-            @change="toggleTaskCompletion(task)"
-            class="w-5 h-5"
-          />
+          <div class="relative">
+            <input
+              type="checkbox"
+              :checked="task.completed"
+              @change="toggleTaskCompletion(task)"
+              class="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+            />
+            <div
+              class="w-6 h-6 border-2 border-gray-400 rounded-md flex items-center justify-center transition-all duration-300"
+              :class="{
+                'bg-green-500 border-green-500': task.completed,
+                'bg-white dark:bg-gray-800': !task.completed,
+              }"
+            >
+              <svg
+                v-if="task.completed"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="white"
+                class="w-4 h-4"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+          </div>
+
           <!-- Режим редактирования -->
           <div v-if="task.editing" class="flex-grow">
             <input
