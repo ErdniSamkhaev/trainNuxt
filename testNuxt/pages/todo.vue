@@ -4,6 +4,7 @@
   >
     <p v-if="userEmail">Вы вошли как: {{ userEmail }}</p>
     <h1 class="text-2xl font-bold mb-4">Список задач</h1>
+
     <!-- Кнопка для переключения темы -->
     <button
       @click="toggleTheme"
@@ -11,6 +12,7 @@
     >
       {{ isDarkMode ? "🌙 Темная" : "☀️ Светлая" }}
     </button>
+
     <!-- Создаем фильтр для задач -->
     <div class="flex flex-wrap gap-2 sm:gap-4 mb-4 justify-center">
       <!-- Кнопка фильтра "Все" -->
@@ -25,6 +27,7 @@
       >
         Все
       </button>
+
       <!-- Кнопка фильтра "Выполненные" -->
       <button
         @click="filter = 'completed'"
@@ -37,6 +40,7 @@
       >
         Выполненные
       </button>
+
       <!-- Кнопка фильтра "Невыполненные" -->
       <button
         @click="filter = 'active'"
@@ -49,6 +53,7 @@
       >
         Невыполненные
       </button>
+
       <!-- Сортировка по дате -->
       <select
         v-model="sortOrder"
@@ -71,6 +76,8 @@
         <option value="Хобби">Хобби</option>
         <option value="Другое">Другое</option>
       </select>
+
+      <!-- Поле ввода для новой категории -->
       <input
         v-if="newTaskCategory === 'Другое'"
         v-model="customCategory"
@@ -93,6 +100,7 @@
         Добавить
       </button>
     </div>
+
     <!-- Список задач -->
     <transition-group name="fade" tag="ul" class="w-full max-w-md">
       <li
@@ -100,18 +108,15 @@
         :key="task.id"
         class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2 rounded-lg shadow-sm flex-col sm:flex-row hover:shadow-md mb-2 gap-2 sm:gap-4 flex justify-between items-center"
       >
-      <!-- Метка категории -->
-      <span
-        class="text-sm px-2 py-1 rounded-full"
-        :class="{
-          'bg-blue-500 text-white': task.category === 'Работа',
-          'bg-green-500 text-white': task.category === 'Дом',
-          'bg-yellow-500 text-white': task.category === 'Хобби',
-          'bg-gray-500 text-white': task.category === 'Другое',
-        }"
-      >
-        {{ task.category }}
-      </span>
+        <!-- Метка категории -->
+        <span
+          class="text-sm px-2 py-1 rounded-full"
+          :class="task.categoryColor"
+        >
+          {{ task.category }}
+        </span>
+
+        <!-- Кастомный чекбокс -->
         <div class="flex flex-wrap gap-2 items-center w-full">
           <div class="relative">
             <input
@@ -153,12 +158,15 @@
               class="border w-full p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
             />
             <div class="flex justify-end mt-2">
+              <!-- Кнопка сохранения -->
               <button
                 @click="saveTask(task)"
                 class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
               >
                 Сохранить
               </button>
+
+              <!-- Кнопка отмены -->
               <button
                 @click="cancelEdit(task)"
                 class="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-400 ml-2"
@@ -167,6 +175,7 @@
               </button>
             </div>
           </div>
+
           <!-- Режим просмотра -->
           <div v-else class="flex-grow">
             <span
@@ -177,16 +186,14 @@
             >
               {{ task.text }}
             </span>
+            <!-- Отображение даты создания задачи -->
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Создано: {{ formatDate(task.createdAt) }}
+            </p>
           </div>
         </div>
         <!-- Кнопки -->
         <div>
-          <!-- <button
-            @click="copyTaskLink(task)"
-            class="text-green-500 hover:underline ml-2"
-          >
-            Копировать ссылку
-          </button> -->
           <!-- Кнопка редактирования -->
           <button
             @click="editTask(task)"
@@ -195,6 +202,7 @@
           >
             Редактировать
           </button>
+
           <!-- Кнопка удаления -->
           <button
             @click="confirmDelete(task)"
@@ -220,6 +228,8 @@
     >
       Назад
     </button>
+
+    <!-- Модальное окно для уведомлений -->
     <Notification ref="notification" />
   </div>
 </template>
@@ -242,7 +252,15 @@ const { $supabase } = useNuxtApp();
 const userEmail = ref("");
 const router = useRouter();
 const newTaskCategory = ref("");
-const customCategory = ref("")
+const customCategory = ref("");
+const categoryColors = [
+  "bg-red-500 text-white",
+  "bg-blue-500 text-white",
+  "bg-green-500 text-white",
+  "bg-yellow-500 text-white",
+  "bg-purple-500 text-white",
+  "bg-pink-500 text-white",
+];
 
 // Функции для редактирования задач
 const editTask = (task) => {
@@ -346,6 +364,8 @@ const addTask = async () => {
     return;
   }
 
+  const color = getRandomColor(); // Генерация случайного цвета
+
   try {
     const { data: user } = await $supabase.auth.getUser();
     if (!user?.user?.id) throw new Error("Пользователь не авторизован.");
@@ -356,6 +376,7 @@ const addTask = async () => {
         {
           title: newTask.value.trim(),
           category,
+          categoryColor: color,
           completed: false,
           user_id: user.user.id,
         },
@@ -368,6 +389,7 @@ const addTask = async () => {
       text: data[0].title,
       category: data[0].category,
       completed: data[0].completed,
+      categoryColor: data[0].categoryColor,
       createdAt: data[0].created_at,
       id: data[0].id,
     });
@@ -453,18 +475,10 @@ const formatDate = (date) => {
     hour12: false,
   });
 };
-// Функция для генерации ссылки на задачу
-const copyTaskLink = (task) => {
-  const link = `${window.location.origin}/todo/${task.id}`;
-  navigator.clipboard
-    .writeText(link)
-    .then(() => {
-      notification.value.show("Ссылка скопирована!", "success");
-    })
-    .catch((err) => {
-      console.error("Ошибка копирования ссылки:", err);
-      notification.value.show("Ошибка копирования ссылки.", "error");
-    });
+// Функция для рандомного цвета задачи
+const getRandomColor = () => {
+  const randomIndex = Math.floor(Math.random() * categoryColors.length);
+  return categoryColors[randomIndex];
 };
 </script>
 
