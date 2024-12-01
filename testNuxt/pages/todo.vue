@@ -61,6 +61,23 @@
 
     <!-- Добавляем новую задачу -->
     <div class="flex flex-wrap gap-2 sm:gap-4 mb-4 justify-center">
+      <select
+        v-model="newTaskCategory"
+        class="border p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 w-full"
+      >
+        <option value="" disabled selected>Выберите категорию</option>
+        <option value="Дом">Дом</option>
+        <option value="Работа">Работа</option>
+        <option value="Хобби">Хобби</option>
+        <option value="Другое">Другое</option>
+      </select>
+      <input
+        v-if="newTaskCategory === 'Другое'"
+        v-model="customCategory"
+        type="text"
+        placeholder="Введите свою категорию"
+        class="border p-2 rounded-lg w-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+      />
       <!-- Поле ввода для новой задачи -->
       <input
         v-model="newTask"
@@ -83,6 +100,18 @@
         :key="task.id"
         class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2 rounded-lg shadow-sm flex-col sm:flex-row hover:shadow-md mb-2 gap-2 sm:gap-4 flex justify-between items-center"
       >
+      <!-- Метка категории -->
+      <span
+        class="text-sm px-2 py-1 rounded-full"
+        :class="{
+          'bg-blue-500 text-white': task.category === 'Работа',
+          'bg-green-500 text-white': task.category === 'Дом',
+          'bg-yellow-500 text-white': task.category === 'Хобби',
+          'bg-gray-500 text-white': task.category === 'Другое',
+        }"
+      >
+        {{ task.category }}
+      </span>
         <div class="flex flex-wrap gap-2 items-center w-full">
           <div class="relative">
             <input
@@ -212,6 +241,8 @@ const sortOrder = ref("newest");
 const { $supabase } = useNuxtApp();
 const userEmail = ref("");
 const router = useRouter();
+const newTaskCategory = ref("");
+const customCategory = ref("")
 
 // Функции для редактирования задач
 const editTask = (task) => {
@@ -305,37 +336,48 @@ onMounted(async () => {
 });
 // Функиця addTask для добавления задач
 const addTask = async () => {
-  if (newTask.value.trim()) {
-    try {
-      // Получаем текущего пользователя
-      const { data: user } = await $supabase.auth.getUser();
-      if (!user?.user?.id) {
-        throw new Error("Пользователь не авторизован.");
-      }
-      const { data, error } = await $supabase
-        .from("tasks")
-        .insert([
-          {
-            title: newTask.value.trim(),
-            completed: false,
-            user_id: user.user.id,
-          },
-        ])
-        .select();
+  const category =
+    newTaskCategory.value === "Другое" && customCategory.value.trim()
+      ? customCategory.value.trim()
+      : newTaskCategory.value;
 
-      if (error) throw error;
+  if (!newTask.value.trim() || !category) {
+    notification.value.show("Введите задачу и выберите категорию!", "error");
+    return;
+  }
 
-      tasks.value.push({
-        text: data[0].title,
-        completed: data[0].completed,
-        createdAt: data[0].created_at,
-        id: data[0].id,
-      });
-      newTask.value = "";
-      notification.value.show("Задача успешно добавлена!", "success");
-    } catch (error) {
-      notification.value.show("Ошибка: задача не добавлена.", "error");
-    }
+  try {
+    const { data: user } = await $supabase.auth.getUser();
+    if (!user?.user?.id) throw new Error("Пользователь не авторизован.");
+
+    const { data, error } = await $supabase
+      .from("tasks")
+      .insert([
+        {
+          title: newTask.value.trim(),
+          category,
+          completed: false,
+          user_id: user.user.id,
+        },
+      ])
+      .select();
+
+    if (error) throw error;
+
+    tasks.value.push({
+      text: data[0].title,
+      category: data[0].category,
+      completed: data[0].completed,
+      createdAt: data[0].created_at,
+      id: data[0].id,
+    });
+
+    newTask.value = "";
+    newTaskCategory.value = "";
+    customCategory.value = "";
+    notification.value.show("Задача успешно добавлена!", "success");
+  } catch (error) {
+    notification.value.show("Ошибка: задача не добавлена.", "error");
   }
 };
 // Функция для фильтрации задач
@@ -424,7 +466,6 @@ const copyTaskLink = (task) => {
       notification.value.show("Ошибка копирования ссылки.", "error");
     });
 };
-
 </script>
 
 <style scoped>
