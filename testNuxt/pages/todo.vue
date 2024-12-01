@@ -181,12 +181,12 @@
         </div>
         <!-- Кнопки -->
         <div>
-          <button
+          <!-- <button
             @click="copyTaskLink(task)"
             class="text-green-500 hover:underline ml-2"
           >
             Копировать ссылку
-          </button>
+          </button> -->
           <!-- Кнопка редактирования -->
           <button
             @click="editTask(task)"
