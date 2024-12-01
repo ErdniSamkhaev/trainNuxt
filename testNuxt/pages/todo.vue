@@ -37,6 +37,7 @@
       >
         Выполненные
       </button>
+      <!-- Кнопка фильтра "Невыполненные" -->
       <button
         @click="filter = 'active'"
         :class="[
@@ -60,12 +61,14 @@
 
     <!-- Добавляем новую задачу -->
     <div class="flex flex-wrap gap-2 sm:gap-4 mb-4 justify-center">
+      <!-- Поле ввода для новой задачи -->
       <input
         v-model="newTask"
         type="text"
         placeholder="Введите новую задачу"
         class="border p-2 rounded-lg w-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
       />
+      <!-- Кнопка для добавления задачи -->
       <button
         @click="addTask"
         class="bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg shadow-md w-full sm:w-auto hover:shadow-lg hover:scale-105 transition-transform"
@@ -150,12 +153,20 @@
         <!-- Кнопки -->
         <div>
           <button
+            @click="copyTaskLink(task)"
+            class="text-green-500 hover:underline ml-2"
+          >
+            Копировать ссылку
+          </button>
+          <!-- Кнопка редактирования -->
+          <button
             @click="editTask(task)"
             v-if="!task.editing"
             class="text-blue-500 hover:underline"
           >
             Редактировать
           </button>
+          <!-- Кнопка удаления -->
           <button
             @click="confirmDelete(task)"
             class="text-red-500 hover:underline ml-2"
@@ -400,6 +411,20 @@ const formatDate = (date) => {
     hour12: false,
   });
 };
+// Функция для генерации ссылки на задачу
+const copyTaskLink = (task) => {
+  const link = `${window.location.origin}/todo/${task.id}`;
+  navigator.clipboard
+    .writeText(link)
+    .then(() => {
+      notification.value.show("Ссылка скопирована!", "success");
+    })
+    .catch((err) => {
+      console.error("Ошибка копирования ссылки:", err);
+      notification.value.show("Ошибка копирования ссылки.", "error");
+    });
+};
+
 </script>
 
 <style scoped>
