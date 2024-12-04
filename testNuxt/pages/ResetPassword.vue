@@ -39,27 +39,34 @@ const route = useRoute();
 const newPassword = ref("");
 
 onMounted(async () => {
+  // Проверяем параметры URL для сброса пароля
   const hashParams = new URLSearchParams(window.location.hash.slice(1));
   const accessToken = hashParams.get("access_token");
   const type = hashParams.get("type");
 
   if (type === "recovery" && accessToken) {
-    // Устанавливаем токен для сброса пароля
-    const { error } = await $supabase.auth.setSession({
-      access_token: accessToken,
-    });
+    try {
+      const { error } = await $supabase.auth.setSession({
+        access_token: accessToken,
+      });
 
-    if (error) {
-      console.error("Ошибка установки сессии для сброса пароля:", error);
-      alert("Ошибка сброса пароля. Попробуйте снова.");
+      if (error) {
+        console.error("Ошибка установки сессии:", error.message);
+        alert("Ссылка для восстановления пароля недействительна или устарела.");
+        router.push("/forgot-password");
+      }
+    } catch (err) {
+      console.error("Ошибка установки сессии:", err);
+      alert("Ошибка восстановления пароля. Попробуйте снова.");
       router.push("/forgot-password");
     }
   } else {
     console.error("Некорректные параметры в URL");
-    alert("Некорректные параметры в URL. Попробуйте снова.");
+    alert("Некорректная ссылка для восстановления пароля.");
     router.push("/forgot-password");
   }
 });
+
 
 const resetPassword = async () => {
   try {
