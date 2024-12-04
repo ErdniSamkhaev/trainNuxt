@@ -344,6 +344,8 @@ onMounted(async () => {
 
     tasks.value = data.map((task) => ({
       text: task.title,
+      category: task.category, // Категория
+      categoryColor: task.categoryColor, // Цвет категории
       completed: task.completed,
       createdAt: task.created_at,
       id: task.id,
