@@ -9,5 +9,8 @@ export default defineNuxtRouteMiddleware(async () => {
         return navigateTo("/login");
       }
     }
+    if (session && to.path !== "/reset-password") {
+      return navigateTo("/");
+    }
   });
   
