@@ -47,6 +47,20 @@
         <option value="newest">Сначала новые</option>
         <option value="oldest">Сначала старые</option>
       </select>
+      <!-- Фильтр по категориям -->
+      <select
+        v-model="selectedCategory"
+        class="px-4 py-2 rounded-lg shadow bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 transition-transform hover:scale-105"
+      >
+        <option value="">Все категории</option>
+        <option
+          v-for="category in uniqueCategories"
+          :key="category"
+          :value="category"
+        >
+          {{ category }}
+        </option>
+      </select>
     </div>
 
     <!-- Добавляем новую задачу -->
@@ -78,18 +92,27 @@
         class="border p-2 rounded-lg w-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
       />
       <!-- Кнопки для добавления задачи и возврата -->
-      <div class="flex gap-2">
+      <div class="flex gap-4 mt-4 justify-center">
+        <!-- Кнопка "Добавить" -->
         <button
           @click="addTask"
-          class="bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg shadow-md w-full sm:w-auto hover:shadow-lg hover:scale-105 transition-transform"
+          class="relative px-6 py-3 border-2 border-blue-500 text-blue-500 rounded-lg overflow-hidden group transition-transform hover:scale-105 shadow-lg"
         >
-          Добавить
+          <span
+            class="absolute inset-0 bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          ></span>
+          <span class="relative z-10 group-hover:text-white">Добавить</span>
         </button>
+
+        <!-- Кнопка "Назад" -->
         <button
           @click="goBack"
-          class="bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg shadow hover:bg-gray-400 hover:scale-105 transition-transform"
+          class="relative px-6 py-3 border-2 border-gray-500 text-gray-500 rounded-lg overflow-hidden group transition-transform hover:scale-105 shadow-lg"
         >
-          Назад
+          <span
+            class="absolute inset-0 bg-gray-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          ></span>
+          <span class="relative z-10 group-hover:text-white">Назад</span>
         </button>
       </div>
     </div>
@@ -144,6 +167,12 @@ const userEmail = ref("");
 const router = useRouter();
 const newTaskCategory = ref("");
 const customCategory = ref("");
+const selectedCategory = ref("");
+const uniqueCategories = computed(() => {
+  const categories = tasks.value.map((task) => task.category);
+  return Array.from(new Set(categories)); // Уникальные категории
+});
+
 const categoryColors = [
   "bg-red-500 text-white",
   "bg-blue-500 text-white",
@@ -285,10 +314,14 @@ const addTask = async () => {
       createdAt: data[0].created_at,
       id: data[0].id,
     });
-
+    // Очистка полей
     newTask.value = "";
     newTaskCategory.value = "";
     customCategory.value = "";
+    // Вибрация устройства
+    if ("vibrate" in navigator) {
+      navigator.vibrate(200); // Вибрация длительностью 200 мс
+    }
     notification.value.show("Задача успешно добавлена!", "success");
   } catch (error) {
     notification.value.show("Ошибка: задача не добавлена.", "error");
@@ -297,6 +330,14 @@ const addTask = async () => {
 // Функция для фильтрации задач
 const filteredTasks = computed(() => {
   let filteredTasks = tasks.value;
+
+  // Фильтрация по категории
+  if (selectedCategory.value) {
+    filteredTasks = filteredTasks.filter(
+      (task) => task.category === selectedCategory.value
+    );
+  }
+
   // Фильтрация по выполненным/невыполненным задачам
   if (filter.value === "completed") {
     filteredTasks = filteredTasks.filter((task) => task.completed);
@@ -304,17 +345,14 @@ const filteredTasks = computed(() => {
     filteredTasks = filteredTasks.filter((task) => !task.completed);
   }
 
-  // Копия массива для сортировки
-  const sortedTasks = [...filteredTasks];
-
   // Сортировка по дате
-  sortedTasks.sort((a, b) =>
+  filteredTasks = filteredTasks.slice().sort((a, b) =>
     sortOrder.value === "newest"
       ? new Date(b.createdAt) - new Date(a.createdAt)
       : new Date(a.createdAt) - new Date(b.createdAt)
   );
 
-  return sortedTasks;
+  return filteredTasks;
 });
 // Метод для подтверждения удаления
 const confirmDelete = (task) => {
@@ -370,4 +408,23 @@ const getRandomColor = () => {
 .fade-leave-to {
   @apply opacity-0 scale-90;
 }
+ul {
+  max-width: 45%; /* Ширина для больших экранов */
+  word-wrap: break-word;
+}
+
+@media (max-width: 768px) {
+  /* Для экранов с шириной менее 768px */
+  ul {
+    max-width: 100%; /* Ширина для мобильных устройств */
+  }
+}
+select {
+  @apply px-4 py-2 rounded-lg shadow bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 transition-transform hover:scale-105;
+}
+
+.FilterButton {
+  @apply px-4 py-2 rounded-lg shadow text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-transform hover:scale-105;
+}
+
 </style>

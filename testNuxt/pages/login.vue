@@ -101,7 +101,7 @@ const login = async () => {
     alert("Вы успешно вошли!");
     router.push("/");
   } catch (error) {
-    console.error("Ошибка входа:", error.message);
+    console.error("Ошибка входа:", error.message, "Введите правильные данные");
     alert(error.message);
   }
 };

@@ -8,10 +8,18 @@
   >
     <!-- Метка категории -->
     <span
-      class="text-sm px-2 py-1 rounded-full"
-      :class="['inline-block text-center min-w-[50px]', task.categoryColor]"
+      class="category-badge relative"
+      :class="task.categoryColor"
+      @mouseenter="showTooltip = true"
+      @mouseleave="showTooltip = false"
     >
       {{ task.category }}
+      <span
+        v-if="showTooltip"
+        class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 bg-black text-white text-xs rounded shadow-lg pointer-events-none"
+      >
+        {{ task.category }}
+      </span>
     </span>
 
     <!-- Основная информация -->
@@ -51,10 +59,11 @@
 
       <!-- Текст задачи или поле редактирования -->
       <div v-if="task.editing" class="flex-grow">
-        <input
+        <textarea
           v-model="task.text"
-          class="border w-full p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
-        />
+          rows="3"
+          class="border w-full p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 resize-none"
+        ></textarea>
         <div class="flex justify-end mt-2 gap-2">
           <button
             @click="onSave"
@@ -70,8 +79,11 @@
           </button>
         </div>
       </div>
+
+      <!-- Дата создания и название категории -->
       <div v-else class="flex-grow">
         <span
+          class="task-text"
           :class="{
             'line-through text-gray-500 dark:text-gray-400': task.completed,
             'text-gray-800 dark:text-gray-200': !task.completed,
@@ -79,8 +91,13 @@
         >
           {{ task.text }}
         </span>
+        <!-- Дата создания -->
         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
           Создано: {{ formatDate(task.createdAt) }}
+        </p>
+        <!-- Название категории -->
+        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+          Категория: {{ task.category }}
         </p>
       </div>
     </div>
@@ -102,7 +119,10 @@
 </template>
 
 <script setup>
+import { ref } from "vue";
+
 const isPressed = ref(false);
+const showTooltip = ref(false);
 
 defineProps({
   task: Object, // Объект задачи
@@ -114,9 +134,9 @@ defineProps({
 });
 
 const formatDate = (date) => {
-  const utcDate = new Date(date); // Преобразуем строку в объект Date
-  const moscowOffset = 3 * 60 * 60 * 1000; // Московский UTC+3 в миллисекундах
-  const moscowDate = new Date(utcDate.getTime() + moscowOffset); // Добавляем разницу
+  const utcDate = new Date(date);
+  const moscowOffset = 3 * 60 * 60 * 1000;
+  const moscowDate = new Date(utcDate.getTime() + moscowOffset);
   return moscowDate.toLocaleString("ru-RU", {
     year: "numeric",
     month: "2-digit",
@@ -134,24 +154,36 @@ const formatDate = (date) => {
   @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2 rounded-lg shadow-sm flex flex-col sm:flex-row gap-2 sm:gap-4 justify-between items-center transition-shadow duration-300;
 }
 
-.task-item {
-  @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2 rounded-lg shadow-sm flex flex-col sm:flex-row gap-2 sm:gap-4 justify-between items-center transition-shadow duration-300;
-}
-
 .task-item:hover {
-  @apply shadow-lg bg-gray-100 dark:bg-gray-700; /* Тень и изменение фона */
+  @apply shadow-lg bg-gray-100 dark:bg-gray-700;
 }
 
-@media (hover: none) {
-  .task-item:active {
-    transform: scale(0.98); /* Легкое уменьшение */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Больше тени */
-    background-color: #f1f5f9; /* Легкое изменение фона */
-  }
-}
 .task-item.scale-95 {
   transform: scale(0.95);
   transition: transform 0.2s ease-in-out;
 }
+/* Добавлено для текста задачи */
+.task-text {
+  max-width: 100%; /* Убедиться, что текст не превышает ширину контейнера */
+  overflow-wrap: break-word; /* Перенос слов */
+  word-break: break-word; /* Перенос слов */
+  overflow: hidden; /* Скрыть текст, который выходит за пределы */
+  display: -webkit-box; /* Для ограничения количества строк */
+  -webkit-line-clamp: 3; /* Максимум 3 строки */
+  -webkit-box-orient: vertical;
+}
 
+.category-badge {
+  width: 7rem;
+  height: 4rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  position: relative;
+}
 </style>
