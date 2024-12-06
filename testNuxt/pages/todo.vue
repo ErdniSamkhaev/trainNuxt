@@ -95,7 +95,7 @@
     </div>
 
     <!-- Список задач -->
-    <transition-group name="fade" tag="ul" class="w-full max-w-md">
+    <transition-group name="fade" tag="ul" class="w-full max-w-md space-y-4">
       <Task
         v-for="task in filteredTasks"
         :key="task.id"

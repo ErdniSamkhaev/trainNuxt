@@ -16,6 +16,7 @@
     "@capacitor/ios": "^6.2.0",
     "@supabase/supabase-js": "^2.46.1",
     "@vite-pwa/nuxt": "^0.10.6",
+    "dynamics.js": "^1.1.5",
     "nuxt": "^3.14.1592",
     "vue": "latest",
     "vue-router": "latest"
