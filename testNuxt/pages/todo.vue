@@ -3,7 +3,7 @@
     class="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col items-center p-4 sm:px-10"
   >
     <p v-if="userEmail">Вы вошли как: {{ userEmail }}</p>
-    <h1 class="text-2xl font-bold mb-4">Список задач</h1>
+    <h1 class="text-2xl font-bold mb-4 holiday-title">Список задач</h1>
 
     <!-- Кнопка для переключения темы -->
     <button
@@ -318,10 +318,6 @@ const addTask = async () => {
     newTask.value = "";
     newTaskCategory.value = "";
     customCategory.value = "";
-    // Вибрация устройства
-    if ("vibrate" in navigator) {
-      navigator.vibrate(200); // Вибрация длительностью 200 мс
-    }
     notification.value.show("Задача успешно добавлена!", "success");
   } catch (error) {
     notification.value.show("Ошибка: задача не добавлена.", "error");
@@ -426,5 +422,48 @@ select {
 .FilterButton {
   @apply px-4 py-2 rounded-lg shadow text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-transform hover:scale-105;
 }
+
+.holiday-title {
+  position: relative;
+  text-align: center;
+  margin-top: 2rem;
+  padding: 1rem;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+  background: linear-gradient(90deg, #ffcc00, #ff6600, #ffcc00);
+  background-size: 400% 400%;
+  animation: glow 6s infinite;
+  border-radius: 10px;
+}
+
+.holiday-title::before {
+  content: "✨🎄✨"; /* Текст огоньков */
+  position: absolute;
+  top: -2rem; /* Размещаем огоньки над заголовком */
+  left: 50%; /* Центрируем относительно заголовка */
+  transform: translateX(-50%); /* Центровка по горизонтали */
+  font-size: 1.5em; /* Увеличиваем размер */
+  color: #ffcc00; /* Цвет огоньков */
+  animation: blink 2s infinite; /* Анимация мерцания */
+  white-space: nowrap; /* Огоньки будут в одну строку */
+}
+
+@keyframes glow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.5; /* Полупрозрачность в середине анимации */
+  }
+}
+
 
 </style>
