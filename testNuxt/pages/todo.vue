@@ -15,44 +15,29 @@
 
     <!-- Создаем фильтр для задач -->
     <div class="flex flex-wrap gap-2 sm:gap-4 mb-4 justify-center">
-      <!-- Кнопка фильтра "Все" -->
-      <button
-        @click="filter = 'all'"
-        :class="[
-          'px-4 py-2 rounded-lg shadow transition-transform hover:scale-105',
-          filter === 'all'
-            ? 'bg-blue-500 text-white'
-            : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
-        ]"
+      <!-- Фильтр "Все" -->
+      <FilterButton
+        :isActive="filter === 'all'"
+        :onClick="() => (filter = 'all')"
       >
         Все
-      </button>
+      </FilterButton>
 
-      <!-- Кнопка фильтра "Выполненные" -->
-      <button
-        @click="filter = 'completed'"
-        :class="[
-          'px-4 py-2 rounded-lg shadow transition-transform hover:scale-105',
-          filter === 'completed'
-            ? 'bg-blue-500 text-white'
-            : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
-        ]"
+      <!-- Фильтр "Выполненные" -->
+      <FilterButton
+        :isActive="filter === 'completed'"
+        :onClick="() => (filter = 'completed')"
       >
         Выполненные
-      </button>
+      </FilterButton>
 
-      <!-- Кнопка фильтра "Невыполненные" -->
-      <button
-        @click="filter = 'active'"
-        :class="[
-          'px-4 py-2 rounded-lg shadow transition-transform hover:scale-105',
-          filter === 'active'
-            ? 'bg-blue-500 text-white'
-            : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
-        ]"
+      <!-- Фильтр "Невыполненные" -->
+      <FilterButton
+        :isActive="filter === 'active'"
+        :onClick="() => (filter = 'active')"
       >
         Невыполненные
-      </button>
+      </FilterButton>
 
       <!-- Сортировка по дате -->
       <select
@@ -92,127 +77,37 @@
         placeholder="Введите новую задачу"
         class="border p-2 rounded-lg w-full bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
       />
-      <!-- Кнопка для добавления задачи -->
-      <button
-        @click="addTask"
-        class="bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg shadow-md w-full sm:w-auto hover:shadow-lg hover:scale-105 transition-transform"
-      >
-        Добавить
-      </button>
+      <!-- Кнопки для добавления задачи и возврата -->
+      <div class="flex gap-2">
+        <button
+          @click="addTask"
+          class="bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg shadow-md w-full sm:w-auto hover:shadow-lg hover:scale-105 transition-transform"
+        >
+          Добавить
+        </button>
+        <button
+          @click="goBack"
+          class="bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg shadow hover:bg-gray-400 hover:scale-105 transition-transform"
+        >
+          Назад
+        </button>
+      </div>
     </div>
 
     <!-- Список задач -->
     <transition-group name="fade" tag="ul" class="w-full max-w-md">
-      <li
+      <Task
         v-for="task in filteredTasks"
         :key="task.id"
-        class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-2 rounded-lg shadow-sm flex-col sm:flex-row hover:shadow-md mb-2 gap-2 sm:gap-4 flex justify-between items-center"
-      >
-        <!-- Метка категории -->
-        <span
-          class="text-sm px-2 py-1 rounded-full"
-          :class="task.categoryColor"
-        >
-          {{ task.category }}
-        </span>
-
-        <!-- Кастомный чекбокс -->
-        <div class="flex flex-wrap gap-2 items-center w-full">
-          <div class="relative">
-            <input
-              type="checkbox"
-              :checked="task.completed"
-              @change="toggleTaskCompletion(task)"
-              class="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
-            />
-            <div
-              class="w-6 h-6 border-2 border-gray-400 rounded-md flex items-center justify-center transition-all duration-300"
-              :class="{
-                'bg-green-500 border-green-500': task.completed,
-                'bg-white dark:bg-gray-800': !task.completed,
-              }"
-            >
-              <svg
-                v-if="task.completed"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="2"
-                stroke="white"
-                class="w-4 h-4"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-            </div>
-          </div>
-
-          <!-- Режим редактирования -->
-          <div v-if="task.editing" class="flex-grow">
-            <input
-              v-model="task.text"
-              type="text"
-              class="border w-full p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
-            />
-            <div class="flex justify-end mt-2">
-              <!-- Кнопка сохранения -->
-              <button
-                @click="saveTask(task)"
-                class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-              >
-                Сохранить
-              </button>
-
-              <!-- Кнопка отмены -->
-              <button
-                @click="cancelEdit(task)"
-                class="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-400 ml-2"
-              >
-                Отмена
-              </button>
-            </div>
-          </div>
-
-          <!-- Режим просмотра -->
-          <div v-else class="flex-grow">
-            <span
-              :class="{
-                'line-through text-gray-500 dark:text-gray-400': task.completed,
-                'text-gray-800 dark:text-gray-200': !task.completed,
-              }"
-            >
-              {{ task.text }}
-            </span>
-            <!-- Отображение даты создания задачи -->
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Создано: {{ formatDate(task.createdAt) }}
-            </p>
-          </div>
-        </div>
-        <!-- Кнопки -->
-        <div>
-          <!-- Кнопка редактирования -->
-          <button
-            @click="editTask(task)"
-            v-if="!task.editing"
-            class="text-blue-500 hover:underline"
-          >
-            Редактировать
-          </button>
-
-          <!-- Кнопка удаления -->
-          <button
-            @click="confirmDelete(task)"
-            class="text-red-500 hover:underline ml-2"
-          >
-            Удалить
-          </button>
-        </div>
-      </li>
+        :task="task"
+        :onToggle="() => toggleTaskCompletion(task)"
+        :onEdit="() => editTask(task)"
+        :onSave="() => saveTask(task)"
+        :onCancel="() => cancelEdit(task)"
+        :onDelete="() => confirmDelete(task)"
+      />
     </transition-group>
+
     <!-- Модальное окно для подтверждения удаления -->
     <Modal
       :show="isModalVisible"
@@ -221,13 +116,6 @@
       @cancel="handleCancelDelete"
       class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center px-4"
     />
-    <!-- Кнопка назад -->
-    <button
-      @click="goBack"
-      class="bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 mb-4"
-    >
-      Назад
-    </button>
 
     <!-- Модальное окно для уведомлений -->
     <Notification ref="notification" />
@@ -239,6 +127,9 @@
 import { onMounted, ref, computed } from "vue";
 import Modal from "~/components/Modal.vue";
 import Notification from "~/components/Notification.vue";
+import FilterButton from "~/components/FilterButton.vue";
+import Task from "~/components/Task.vue";
+
 // Создаем переменные
 const newTask = ref("");
 const notification = ref(null);
@@ -261,7 +152,6 @@ const categoryColors = [
   "bg-purple-500 text-white",
   "bg-pink-500 text-white",
 ];
-
 // Функции для редактирования задач
 const editTask = (task) => {
   task.editing = true;
@@ -461,21 +351,6 @@ const handleCancelDelete = () => {
 // Функция "Назад"
 const goBack = () => {
   router.go(-1);
-};
-// Дата создания задачи
-const formatDate = (date) => {
-  const utcDate = new Date(date); // Преобразуем в объект Date
-  const moscowOffset = 3 * 60 * 60 * 1000; // Московский UTC+3 в миллисекундах
-  const moscowDate = new Date(utcDate.getTime() + moscowOffset); // Добавляем разницу
-  return moscowDate.toLocaleString("ru-RU", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-  });
 };
 // Функция для рандомного цвета задачи
 const getRandomColor = () => {
