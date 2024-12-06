@@ -43,6 +43,14 @@
         class="p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
         required
       />
+      <input
+        v-model="confirmPassword"
+        type="password"
+        placeholder="Подтвердите пароль"
+        class="p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+        required
+      />
+      <p v-if="errorMessage" class="text-red-500 text-sm">{{ errorMessage }}</p>
       <button
         type="submit"
         class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
@@ -77,6 +85,8 @@ import { useNuxtApp } from "#app";
 const { $supabase } = useNuxtApp(); // Получаем Supabase из Nuxt
 const email = ref("");
 const password = ref("");
+const confirmPassword = ref("");
+const errorMessage = ref("");
 const router = useRouter();
 
 // Снежинки
@@ -89,6 +99,14 @@ const snowflakes = ref(
 );
 
 const register = async () => {
+  errorMessage.value = ""; // Сбрасываем сообщение об ошибке
+
+  // Проверяем совпадение паролей
+  if (password.value !== confirmPassword.value) {
+    errorMessage.value = "Пароли не совпадают.";
+    return;
+  }
+
   try {
     const { error } = await $supabase.auth.signUp({
       email: email.value,
@@ -99,7 +117,7 @@ const register = async () => {
     router.push("/login");
   } catch (error) {
     console.error("Ошибка регистрации:", error.message);
-    alert(error.message);
+    errorMessage.value = error.message;
   }
 };
 
@@ -108,8 +126,6 @@ const goBack = () => {
   router.push("/");
 };
 </script>
-
-
 
 <style>
 /* Снежинки */
@@ -164,5 +180,9 @@ form button {
 
 form button:hover {
   background-color: #c0392b;
+}
+
+.text-red-500 {
+  color: #f56565;
 }
 </style>
