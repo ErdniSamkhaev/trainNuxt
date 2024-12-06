@@ -136,51 +136,118 @@
 
     <!-- О приложении -->
     <div class="bg-gray-200 dark:bg-gray-800 w-full py-8 px-4 text-center">
-      <h2 class="text-2xl font-bold mb-4">
+      <h2 class="text-2xl font-bold mb-6">
         {{
           currentLanguage === "ru"
             ? "Что вы можете делать?"
             : "What can you do?"
         }}
       </h2>
-      <ul class="list-disc list-inside text-lg">
-        <li>
-          {{
-            currentLanguage === "ru"
-              ? "Создавайте и управляйте задачами"
-              : "Create and manage tasks"
-          }}
-        </li>
-        <li>
-          {{
-            currentLanguage === "ru"
-              ? "Фильтруйте и сортируйте по дате и статусу"
-              : "Filter and sort by date and status"
-          }}
-        </li>
-        <li>
-          {{
-            currentLanguage === "ru"
-              ? "Переключайтесь между темной и светлой темой"
-              : "Switch between dark and light themes"
-          }}
-        </li>
-        <li>
-          {{
-            currentLanguage === "ru"
-              ? "Сохраняйте задачи с использованием Supabase"
-              : "Save tasks using Supabase"
-          }}
-        </li>
-        <li>
-          {{
-            currentLanguage === "ru"
-              ? "Добавляйте приложение на главный экран как PWA"
-              : "Add the app to your home screen as a PWA"
-          }}
-        </li>
-      </ul>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+          class="feature-card p-6 rounded-lg bg-white dark:bg-gray-700 shadow-lg transform transition-transform hover:scale-105"
+        >
+          <div class="icon text-blue-500 mb-4 text-4xl">
+            <i class="fas fa-tasks"></i>
+          </div>
+          <h3 class="text-lg font-bold">
+            {{
+              currentLanguage === "ru"
+                ? "Создавайте и управляйте задачами"
+                : "Create and manage tasks"
+            }}
+          </h3>
+          <p class="text-sm">
+            {{
+              currentLanguage === "ru"
+                ? "Легко добавляйте задачи и управляйте своим расписанием."
+                : "Easily add tasks and manage your schedule."
+            }}
+          </p>
+        </div>
+        <div
+          class="feature-card p-6 rounded-lg bg-white dark:bg-gray-700 shadow-lg transform transition-transform hover:scale-105"
+        >
+          <div class="icon text-green-500 mb-4 text-4xl">
+            <i class="fas fa-filter"></i>
+          </div>
+          <h3 class="text-lg font-bold">
+            {{
+              currentLanguage === "ru"
+                ? "Фильтруйте и сортируйте"
+                : "Filter and sort"
+            }}
+          </h3>
+          <p class="text-sm">
+            {{
+              currentLanguage === "ru"
+                ? "Сортируйте задачи по дате, приоритету или статусу."
+                : "Sort tasks by date, priority, or status."
+            }}
+          </p>
+        </div>
+        <div
+          class="feature-card p-6 rounded-lg bg-white dark:bg-gray-700 shadow-lg transform transition-transform hover:scale-105"
+        >
+          <div class="icon text-yellow-500 mb-4 text-4xl">
+            <i class="fas fa-adjust"></i>
+          </div>
+          <h3 class="text-lg font-bold">
+            {{
+              currentLanguage === "ru"
+                ? "Переключайтесь между темами"
+                : "Switch themes"
+            }}
+          </h3>
+          <p class="text-sm">
+            {{
+              currentLanguage === "ru"
+                ? "Выбирайте светлую или тёмную тему на ваш вкус."
+                : "Choose between light and dark themes."
+            }}
+          </p>
+        </div>
+        <div
+          class="feature-card p-6 rounded-lg bg-white dark:bg-gray-700 shadow-lg transform transition-transform hover:scale-105"
+        >
+          <div class="icon text-red-500 mb-4 text-4xl">
+            <i class="fas fa-cloud-upload-alt"></i>
+          </div>
+          <h3 class="text-lg font-bold">
+            {{ currentLanguage === "ru" ? "Сохраняйте задачи" : "Save tasks" }}
+          </h3>
+          <p class="text-sm">
+            {{
+              currentLanguage === "ru"
+                ? "Данные автоматически сохраняются в Supabase."
+                : "Data is automatically saved in Supabase."
+            }}
+          </p>
+        </div>
+        <div
+          class="feature-card p-6 rounded-lg bg-white dark:bg-gray-700 shadow-lg transform transition-transform hover:scale-105"
+        >
+          <div class="icon text-purple-500 mb-4 text-4xl">
+            <i class="fas fa-mobile-alt"></i>
+          </div>
+          <h3 class="text-lg font-bold">
+            {{
+              currentLanguage === "ru"
+                ? "Добавляйте приложение как PWA"
+                : "Add as PWA"
+            }}
+          </h3>
+          <p class="text-sm">
+            {{
+              currentLanguage === "ru"
+                ? "Устанавливайте приложение на главный экран устройства."
+                : "Install the app on your device's home screen."
+            }}
+          </p>
+        </div>
+      </div>
     </div>
+
     <!-- Елка -->
     <div class="tree-container">
       <svg
@@ -454,4 +521,40 @@ onMounted(() => {
 .countdown-unit span {
   display: block;
 }
+/* О приложении */
+.feature-card {
+  transition: all 0.3s ease-in-out;
+  background: linear-gradient(145deg, #ffffff, #f8f8f8); /* Убрали насыщенность */
+  box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.1), -6px -6px 12px rgba(255, 255, 255, 0.9);
+  border-radius: 8px; /* Добавили легкое скругление */
+  text-align: left; /* Выравнивание текста */
+}
+
+.feature-card h3 {
+  font-size: 1.2rem; /* Увеличили размер заголовка */
+  color: #333; /* Четкий темный цвет */
+  margin-bottom: 8px;
+}
+
+.feature-card p {
+  font-size: 0.9rem; /* Читаемый размер для текста */
+  color: #666; /* Четкий цвет для описания */
+}
+
+.feature-card:hover {
+  transform: translateY(-5px); /* Эффект небольшого подъема */
+  box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.15), -8px -8px 16px rgba(255, 255, 255, 0.9);
+  background: linear-gradient(145deg, #f9f9f9, #ffffff); /* Подсветка на hover */
+}
+
+.icon {
+  font-size: 3rem; /* Увеличили размер иконки */
+  margin-bottom: 12px;
+}
+
+.icon i {
+  color: inherit; /* Используем цвет родительского элемента */
+}
+
+
 </style>
