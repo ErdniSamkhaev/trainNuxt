@@ -2,6 +2,21 @@
   <div
     class="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col justify-between items-center"
   >
+    <div class="snow-container">
+      <span
+        v-for="(snowflake, index) in snowflakes"
+        :key="index"
+        class="snowflake"
+        :style="{
+          left: `${snowflake.left}%`,
+          animationDuration: `${snowflake.animationDuration}s`,
+          animationDelay: `${snowflake.animationDelay}s`,
+        }"
+      >
+        ❄
+      </span>
+    </div>
+
     <!-- Верхняя панель с кнопками -->
     <div class="w-full flex justify-end items-center p-4 space-x-4">
       <!-- Кнопка переключения языка -->
@@ -91,17 +106,30 @@
         </div>
       </template>
       <template v-else>
+        <!-- Кнопка "Войти" -->
         <nuxt-link
           to="/login"
-          class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-transform hover:scale-105"
+          class="relative px-6 py-3 border-2 border-blue-500 text-blue-500 rounded-lg overflow-hidden group transition-transform hover:scale-105 shadow-lg"
         >
-          {{ currentLanguage === "ru" ? "Войти" : "Login" }}
+          <span
+            class="absolute inset-0 bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          ></span>
+          <span class="relative z-10 group-hover:text-white">
+            {{ currentLanguage === "ru" ? "Войти" : "Login" }}
+          </span>
         </nuxt-link>
+
+        <!-- Кнопка "Зарегистрироваться" -->
         <nuxt-link
           to="/register"
-          class="mt-4 px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-transform hover:scale-105"
+          class="relative mt-4 px-6 py-3 border-2 border-green-500 text-green-500 rounded-lg overflow-hidden group transition-transform hover:scale-105 shadow-lg"
         >
-          {{ currentLanguage === "ru" ? "Зарегистрироваться" : "Register" }}
+          <span
+            class="absolute inset-0 bg-green-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          ></span>
+          <span class="relative z-10 group-hover:text-white">
+            {{ currentLanguage === "ru" ? "Зарегистрироваться" : "Register" }}
+          </span>
         </nuxt-link>
       </template>
     </div>
@@ -153,6 +181,70 @@
         </li>
       </ul>
     </div>
+    <!-- Елка -->
+    <div class="tree-container">
+      <svg
+        viewBox="0 0 200 350"
+        xmlns="http://www.w3.org/2000/svg"
+        class="tree"
+      >
+        <!-- Ствол -->
+        <rect x="90" y="300" width="20" height="50" fill="#8B4513" />
+
+        <!-- Ветки -->
+        <polygon
+          v-for="(layer, index) in branches"
+          :key="index"
+          :points="layer.points"
+          :fill="layer.color"
+        />
+
+        <!-- Украшения -->
+        <circle
+          v-for="(ornament, index) in ornaments"
+          :key="index"
+          :cx="ornament.x"
+          :cy="ornament.y"
+          :r="ornament.size"
+          :fill="ornament.color"
+          class="ornament"
+          :style="{ animationDelay: ornament.delay + 's' }"
+        />
+
+        <!-- Звезда -->
+        <polygon
+          points="100,20 110,50 140,50 115,70 125,100 100,80 75,100 85,70 60,50 90,50"
+          fill="gold"
+        />
+      </svg>
+    </div>
+    <div class="countdown-timer text-center mt-8">
+      <h2 class="text-2xl font-bold">
+        {{
+          currentLanguage === "ru"
+            ? "До Нового года осталось:"
+            : "Time left until New Year:"
+        }}
+      </h2>
+      <div class="flex justify-center space-x-4 mt-4">
+        <div class="countdown-unit">
+          <span class="text-4xl font-bold">{{ countdown.days }}</span>
+          <p>{{ currentLanguage === "ru" ? "Дней" : "Days" }}</p>
+        </div>
+        <div class="countdown-unit">
+          <span class="text-4xl font-bold">{{ countdown.hours }}</span>
+          <p>{{ currentLanguage === "ru" ? "Часов" : "Hours" }}</p>
+        </div>
+        <div class="countdown-unit">
+          <span class="text-4xl font-bold">{{ countdown.minutes }}</span>
+          <p>{{ currentLanguage === "ru" ? "Минут" : "Minutes" }}</p>
+        </div>
+        <div class="countdown-unit">
+          <span class="text-4xl font-bold">{{ countdown.seconds }}</span>
+          <p>{{ currentLanguage === "ru" ? "Секунд" : "Seconds" }}</p>
+        </div>
+      </div>
+    </div>
 
     <!-- Footer -->
     <footer class="w-full bg-gray-900 text-gray-200 text-center py-4">
@@ -178,6 +270,53 @@ const { $supabase } = useNuxtApp();
 const router = useRouter();
 const isDarkMode = ref(false);
 const currentLanguage = ref("ru"); // Язык по умолчанию
+const countdown = ref({
+  days: 0,
+  hours: 0,
+  minutes: 0,
+  seconds: 0,
+});
+
+const calculateCountdown = () => {
+  const now = new Date();
+  const nextYear = new Date(now.getFullYear() + 1, 0, 1);
+  const difference = nextYear - now;
+
+  countdown.value.days = Math.floor(difference / (1000 * 60 * 60 * 24));
+  countdown.value.hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
+  countdown.value.minutes = Math.floor((difference / (1000 * 60)) % 60);
+  countdown.value.seconds = Math.floor((difference / 1000) % 60);
+};
+
+onMounted(() => {
+  calculateCountdown();
+  setInterval(calculateCountdown, 1000);
+});
+
+const branches = ref([
+  { points: "20,280 180,280 100,200", color: "#006400" }, // Нижняя самая широкая ветка
+  { points: "30,240 170,240 100,160", color: "#228B22" }, // Вторая по ширине
+  { points: "40,200 160,200 100,120", color: "#2E8B57" }, // Третья
+  { points: "50,160 150,160 100,80", color: "#006400" }, // Верхняя самая узкая ветка
+]);
+
+const ornaments = ref(
+  Array.from({ length: 30 }).map(() => ({
+    x: Math.random() * 120 + 40, // Украшения располагаются внутри дерева
+    y: Math.random() * 200 + 100,
+    size: Math.random() * 3 + 3,
+    color: ["red", "blue", "gold", "silver"][Math.floor(Math.random() * 4)],
+    delay: Math.random() * 2, // Случайная задержка анимации
+  }))
+);
+
+const snowflakes = ref(
+  Array.from({ length: 50 }).map(() => ({
+    left: Math.random() * 100, // Позиция снежинки
+    animationDuration: 5 + Math.random() * 5, // Скорость: 5–10 секунд
+    animationDelay: Math.random() * 5, // Задержка: 0–5 секунд
+  }))
+);
 
 // Функция для загрузки сохраненных настроек из localStorage
 const loadSettings = () => {
@@ -235,4 +374,91 @@ onMounted(() => {
   loadSettings();
   fetchUser();
 });
+// Функция для генерации случайных значений для анимации снежинок
+const getSnowStyle = () => ({
+  left: `${Math.random() * 100}%`, // Задаем фиксированное значение
+  animationDuration: `${5 + Math.random() * 5}s`, // Скорость: 5–10 секунд
+  animationDelay: `${Math.random() * 5}s`, // Задержка: 0–5 секунд
+});
 </script>
+
+<style>
+/* Стили для анимации снежинок */
+@keyframes snow {
+  0% {
+    transform: translateY(-10%);
+    opacity: 0; /* Снежинка появляется постепенно */
+  }
+  50% {
+    transform: translate(10px, 50vh); /* Движение слегка влево */
+  }
+  80% {
+    opacity: 1; /* Снежинка полностью видна большую часть времени */
+  }
+  100% {
+    transform: translateY(110vh); /* Снежинка уходит за пределы экрана */
+    opacity: 0; /* Постепенное исчезновение */
+  }
+}
+
+.snowflake {
+  position: fixed;
+  top: -10px;
+  font-size: 1.2em;
+  z-index: 1000;
+  pointer-events: none;
+  animation: snow var(--speed, 5s) linear infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+.snow-container .snowflake {
+  left: var(--left); /* Оставляем значение, но оно фиксировано */
+}
+
+/* Стили для ёлки */
+.tree-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+  position: relative;
+}
+
+.tree {
+  width: 250px; /* Увеличение ширины ёлки */
+  height: 350px; /* Увеличение высоты ёлки */
+}
+
+.ornament {
+  transition: transform 0.3s ease-in-out;
+  animation: blink 2s infinite ease-in-out;
+}
+
+.ornament:hover {
+  transform: scale(1.3);
+}
+
+/* Анимация мигания */
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+/* Стили для таймера */
+.countdown-timer {
+  color: #ff4500; /* Красивый яркий цвет для таймера */
+}
+
+.countdown-unit {
+  text-align: center;
+  width: 80px;
+}
+
+.countdown-unit span {
+  display: block;
+}
+</style>
