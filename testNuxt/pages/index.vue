@@ -309,15 +309,14 @@ const ornaments = ref(
     delay: Math.random() * 2, // Случайная задержка анимации
   }))
 );
-
+// Снежинки
 const snowflakes = ref(
   Array.from({ length: 50 }).map(() => ({
     left: Math.random() * 100, // Позиция снежинки
     animationDuration: 5 + Math.random() * 5, // Скорость: 5–10 секунд
-    animationDelay: Math.random() * 5, // Задержка: 0–5 секунд
+    animationDelay: Math.random() * -5, // Отрицательная задержка: уже началась анимация
   }))
 );
-
 // Функция для загрузки сохраненных настроек из localStorage
 const loadSettings = () => {
   // Загружаем язык
@@ -373,12 +372,6 @@ const toggleLanguage = () => {
 onMounted(() => {
   loadSettings();
   fetchUser();
-});
-// Функция для генерации случайных значений для анимации снежинок
-const getSnowStyle = () => ({
-  left: `${Math.random() * 100}%`, // Задаем фиксированное значение
-  animationDuration: `${5 + Math.random() * 5}s`, // Скорость: 5–10 секунд
-  animationDelay: `${Math.random() * 5}s`, // Задержка: 0–5 секунд
 });
 </script>
 
