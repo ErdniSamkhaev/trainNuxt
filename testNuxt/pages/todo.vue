@@ -128,6 +128,7 @@
         :onSave="() => saveTask(task)"
         :onCancel="() => cancelEdit(task)"
         :onDelete="() => confirmDelete(task)"
+        :onToggleUrgent="() => toggleUrgency(task)"
       />
     </transition-group>
 
@@ -270,12 +271,13 @@ onMounted(async () => {
       .order("created_at", { ascending: false });
 
     if (error) throw error;
-
+    // Преобразование задачи из бд в локальный массив
     tasks.value = data.map((task) => ({
       text: task.title,
       category: task.category, // Категория
       categoryColor: task.categoryColor, // Цвет категории
       completed: task.completed,
+      urgent: task.urgent || false, // Поле срочности
       createdAt: task.created_at,
       id: task.id,
     }));
@@ -403,6 +405,27 @@ const getRandomColor = () => {
   const randomIndex = Math.floor(Math.random() * categoryColors.length);
   return categoryColors[randomIndex];
 };
+// Функция для переключения срочности
+const toggleUrgency = async (task) => {
+  task.urgent = !task.urgent; // Переключение срочности локально
+  try {
+    const { error } = await $supabase
+      .from("tasks")
+      .update({ urgent: task.urgent })
+      .eq("id", task.id);
+
+    if (error) {
+      console.error("Ошибка обновления срочности задачи:", error);
+      notification.value.show("Ошибка: не удалось обновить срочность.", "error");
+      task.urgent = !task.urgent; // Возвращаем состояние при ошибке
+    }
+  } catch (error) {
+    console.error("Ошибка обновления срочности задачи:", error);
+    notification.value.show("Ошибка: Что-то пошло не так.", "error");
+    task.urgent = !task.urgent; // Возвращаем состояние при ошибке
+  }
+};
+
 </script>
 
 <style scoped>

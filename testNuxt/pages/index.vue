@@ -89,6 +89,22 @@
                 }}
               </span>
             </button>
+            <!-- Кнопка перейти к карте желаний -->
+            <nuxt-link
+              to="/wish-board"
+              class="relative px-6 py-3 border-2 border-blue-500 text-blue-500 rounded-lg overflow-hidden group transition-transform hover:scale-105 shadow-lg"
+            >
+              <span
+                class="absolute inset-0 bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              ></span>
+              <span class="relative z-10 group-hover:text-white">
+                {{
+                  currentLanguage === "ru"
+                    ? "Перейти к карте желаний"
+                    : "Go to the wish card"
+                }}
+              </span>
+            </nuxt-link>
 
             <!-- Кнопка "Выйти" -->
             <button
@@ -331,6 +347,7 @@
 // Импортируем зависимости
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import WishBoard from "./wish-board.vue";
 
 const user = ref(null);
 const { $supabase } = useNuxtApp();
@@ -524,8 +541,13 @@ onMounted(() => {
 /* О приложении */
 .feature-card {
   transition: all 0.3s ease-in-out;
-  background: linear-gradient(145deg, #ffffff, #f8f8f8); /* Убрали насыщенность */
-  box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.1), -6px -6px 12px rgba(255, 255, 255, 0.9);
+  background: linear-gradient(
+    145deg,
+    #ffffff,
+    #f8f8f8
+  ); /* Убрали насыщенность */
+  box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.1),
+    -6px -6px 12px rgba(255, 255, 255, 0.9);
   border-radius: 8px; /* Добавили легкое скругление */
   text-align: left; /* Выравнивание текста */
 }
@@ -543,8 +565,13 @@ onMounted(() => {
 
 .feature-card:hover {
   transform: translateY(-5px); /* Эффект небольшого подъема */
-  box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.15), -8px -8px 16px rgba(255, 255, 255, 0.9);
-  background: linear-gradient(145deg, #f9f9f9, #ffffff); /* Подсветка на hover */
+  box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.15),
+    -8px -8px 16px rgba(255, 255, 255, 0.9);
+  background: linear-gradient(
+    145deg,
+    #f9f9f9,
+    #ffffff
+  ); /* Подсветка на hover */
 }
 
 .icon {
@@ -555,6 +582,4 @@ onMounted(() => {
 .icon i {
   color: inherit; /* Используем цвет родительского элемента */
 }
-
-
 </style>

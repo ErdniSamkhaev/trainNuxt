@@ -4,7 +4,7 @@
     @mousedown="isPressed = true"
     @mouseup="isPressed = false"
     @mouseleave="isPressed = false"
-    :class="{ 'scale-95': isPressed }"
+    :class="{ urgent: task.urgent, 'scale-95': isPressed }"
   >
     <!-- Метка категории -->
     <span
@@ -104,6 +104,18 @@
 
     <!-- Кнопки управления -->
     <div>
+      <!-- Кнопка "Пометить как срочное" -->
+      <button
+        @click="onToggleUrgent"
+        :class="
+          task.urgent ? 'text-red-500 bg-red-100' : 'text-gray-500 bg-gray-100'
+        "
+        class="hover:scale-110 transition-transform px-2 py-1 rounded-lg"
+      >
+        ⚠️ {{ task.urgent ? "Убрать срочность" : "Пометить как срочную" }}
+      </button>
+
+      <!-- Кнопки редактирования -->
       <button
         v-if="!task.editing"
         @click="onEdit"
@@ -111,6 +123,7 @@
       >
         Редактировать
       </button>
+      <!-- Кнопка удаления -->
       <button @click="onDelete" class="text-red-500 hover:underline ml-2">
         Удалить
       </button>
@@ -131,6 +144,7 @@ defineProps({
   onSave: Function, // Сохранение изменений
   onCancel: Function, // Отмена редактирования
   onDelete: Function, // Удаление задачи
+  onToggleUrgent: Function, // Переключение статуса срочности
 });
 
 const formatDate = (date) => {
@@ -169,7 +183,6 @@ const formatDate = (date) => {
   word-break: break-word; /* Перенос слов */
   overflow: hidden; /* Скрыть текст, который выходит за пределы */
   display: -webkit-box; /* Для ограничения количества строк */
-  -webkit-line-clamp: 3; /* Максимум 3 строки */
   -webkit-box-orient: vertical;
 }
 
@@ -186,4 +199,54 @@ const formatDate = (date) => {
   text-overflow: ellipsis;
   position: relative;
 }
+/* Стили для срочных задач */
+.task-item.urgent {
+  @apply bg-red-100 border-red-400; /* Светло-красный фон и красная рамка */
+}
+
+.task-item.urgent .task-text {
+  @apply font-bold text-red-600; /* Жирный текст с красным цветом */
+}
+button {
+  @apply px-4 py-2 text-sm w-full sm:w-auto; /* Кнопки занимают всю ширину на мобильных */
+}
+ul {
+  @apply w-full max-w-xl overflow-x-auto; /* Объединяем стили */
+}
+
+@media (max-width: 768px) {
+  ul {
+    @apply p-2; /* Уменьшаем отступы */
+  }
+}
+
+button + button {
+  @apply mt-2 sm:mt-0; /* Отступ между кнопками только на мобильных */
+}
+.task-item {
+  @apply p-4; /* Уменьшаем отступы */
+}
+
+.category-badge {
+  @apply text-xs w-24; /* Сокращаем размер шрифта и ширину */
+}
+
+.task-text {
+  @apply text-sm; /* Меньше текста для экономии места */
+}
+
+@media (max-width: 768px) {
+  .task-item {
+    @apply p-2; /* Уменьшенные отступы */
+  }
+
+  .task-text {
+    @apply text-xs; /* Меньший текст */
+  }
+
+  .category-badge {
+    @apply text-xs w-20; /* Уменьшенный размер значка */
+  }
+}
+
 </style>
