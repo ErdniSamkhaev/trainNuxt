@@ -183,13 +183,23 @@ const categoryColors = [
 ];
 // Функции для редактирования задач
 const editTask = (task) => {
-  task.editing = true;
+  // Восстанавливаем оригинальный текст при отмене
+  task.originalText = task.text;
+  task.editing = true
 };
+// Функции для отмены редактирования
 const cancelEdit = (task) => {
+  // Восстанавливаем оригинальный текст задачи при отмене
+  if (task.originalText !== undefined) {
+    task.text = task.originalText;
+  }
   task.editing = false;
+  delete task.originalText; // Удаляем временное поле
 };
+// Функции для сохранения задач
 const saveTask = async (task) => {
   task.editing = false;
+  delete task.originalText; // Удаляем временное поле после сохранения
   try {
     const { error } = await $supabase
       .from("tasks")
@@ -342,11 +352,13 @@ const filteredTasks = computed(() => {
   }
 
   // Сортировка по дате
-  filteredTasks = filteredTasks.slice().sort((a, b) =>
-    sortOrder.value === "newest"
-      ? new Date(b.createdAt) - new Date(a.createdAt)
-      : new Date(a.createdAt) - new Date(b.createdAt)
-  );
+  filteredTasks = filteredTasks
+    .slice()
+    .sort((a, b) =>
+      sortOrder.value === "newest"
+        ? new Date(b.createdAt) - new Date(a.createdAt)
+        : new Date(a.createdAt) - new Date(b.createdAt)
+    );
 
   return filteredTasks;
 });
@@ -464,6 +476,4 @@ select {
     opacity: 0.5; /* Полупрозрачность в середине анимации */
   }
 }
-
-
 </style>
